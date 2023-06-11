@@ -1,10 +1,27 @@
-
+//.env will come first 
+require('dotenv').config()
 const express = require('express')
 const app = express()
 const cors = require('cors')
+// const mongoose = require('mongoose')
+const Note = require('./models/note')
+var morgan = require('morgan')
+// const note = require('./models/note')
+
+// if(process.argv.length<3){
+//     console.log(`give password as argument`)
+//     process.exit(1)
+// }
+// const password = process.argv[2]
 
 app.use(cors())
 app.use(express.static('build'))
+app.use(morgan('dev'))
+
+//this is json parser, this will take the data from the request and convert into object
+app.use(express.json())
+
+
 let notes = [  {    
     id: 1,
     content: "HTML is easy",    
@@ -18,10 +35,52 @@ let notes = [  {
     important: true  }
 ]
 
+// const url = process.env.MONGODB_URI
+// mongoose.set(`strictQuery`,false)
+// mongoose.connect(url)
+// .then(result=>console.log(`connected`))
+// .catch(error=>console.log(`error occured`))
+// const noteSchema = new mongoose.Schema({
+//     content : String,
+//     important : Boolean,
+// })
+// const Note = mongoose.model('Note',noteSchema)
+// noteSchema.set('toJSON',{
+//     transform: (document, returnedObject) => {
+//         returnedObject.id = returnedObject._id.toString()
+//         delete returnedObject._id
+//         delete returnedObject.__v
+//     }
+// })
 
+app.get('/api/notes',(request,response)=>{
+    Note.find({}).then(notes => {
+        response.json(notes)
+        // console.log(`mongo one`)
+    })
+})
 
-//this is json parser, this will take the data from the request and convert into object
-app.use(express.json())
+app.post('/api/notes',(request,response)=>{
+    const body = request.body
+    // console.log(`Here's the body ${body}`)
+    if(body.content === undefined){
+        return response.status(400).json({error : `content hi nai hai`})
+    }
+    const nNote = new Note({
+        content : body.content,
+        important : body.important || false
+    })
+    console.log(`Here's the new note${nNote}`)
+    nNote.save().then(savedNote=>{
+        response.send(savedNote)
+    })
+})
+app.get('/api/notes/:id',(request,response)=>{
+    Note.findById(request.params.id).then(note =>{
+        response.json(note)
+    })
+})
+
 
 const generateId = () => {
     const maxId = notes.length > 0
