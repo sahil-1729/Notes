@@ -34,24 +34,6 @@ let notes = [  {
     important: true  }
 ]
 
-// const url = process.env.MONGODB_URI
-// mongoose.set(`strictQuery`,false)
-// mongoose.connect(url)
-// .then(result=>console.log(`connected`))
-// .catch(error=>console.log(`error occured`))
-// const noteSchema = new mongoose.Schema({
-//     content : String,
-//     important : Boolean,
-// })
-// const Note = mongoose.model('Note',noteSchema)
-// noteSchema.set('toJSON',{
-//     transform: (document, returnedObject) => {
-//         returnedObject.id = returnedObject._id.toString()
-//         delete returnedObject._id
-//         delete returnedObject.__v
-//     }
-// })
-
 app.get('/api/notes',(request,response)=>{
     Note.find({}).then(notes => {
         response.json(notes)
@@ -95,72 +77,91 @@ const errorHandler = (error, request, response, next) => {
   }
   
 
-const generateId = () => {
-    const maxId = notes.length > 0
-    ? Math.max(...notes.map(n => n.id))
-    : 0
-    return maxId + 1
-}
+// const generateId = () => {
+//     const maxId = notes.length > 0
+//     ? Math.max(...notes.map(n => n.id))
+//     : 0
+//     return maxId + 1
+// }
 
-app.post('/api/notes',(request,response)=>{
-    const body = request.body
-    if(!body.content){
-        return response.status(400).json(
-            {
-                error : 'content missing'
-            }
-        )
-    }
-    const note = {
-        content : body.content,
-        important : body.important || false,
-        id : generateId(),
-    }
+// app.post('/api/notes',(request,response)=>{
+//     const body = request.body
+//     if(!body.content){
+//         return response.status(400).json(
+//             {
+//                 error : 'content missing'
+//             }
+//         )
+//     }
+//     const note = {
+//         content : body.content,
+//         important : body.important || false,
+//         id : generateId(),
+//     }
 
-    notes = notes.concat(note)
-    console.log(...notes)
-    //This will print on the terminal
-    // console.log(note)
-    //This will give the response when we do the post request
-    response.json(note)
-})
+//     notes = notes.concat(note)
+//     console.log(...notes)
+//     //This will print on the terminal
+//     // console.log(note)
+//     //This will give the response when we do the post request
+//     response.json(note)
+// })
 
 //Here below are the routes, wherein in the first, there are two parameters, request contains the detailed information of the get method, the the response tells what to do after getting the request, in this case(in first route) its sending hello world
 app.get('/',(request,response)=>{
     response.send('<h1>Hello World</h1>')
 })
 
-app.delete('/api/notes/:id',(request,response)=>{
-    const id = Number(request.params.id)
-    notes = notes.filter(note => note.id !== id)
-    response.status(204).end()
-})
-
-//the inverted commas makes the url unique, i.e its a combination of the resource type and a unique number
-app.get('/api/notes/:id',(request,response)=>{
-    const id = Number(request.params.id)
-    const note = notes.find(note => {
-        console.log(note.id, typeof note.id, id, typeof id, note.id === id)
-        return note.id === id
+app.delete('/api/notes/:id',(request,response,next)=>{
+    Note.findByIdAndDelete(request.params.id).then(result=>{
+        response.status(204).end()
     })
-    if(note){
-        console.log(note)
-        response.json(note)
-    }
-    else{
-        console.log(`Not found`)
-
-        response.status(404).send(`Error 404 NOT FOUND`)
-
-        //setting the status of code with .status               and not sending any data with end()
-        // response.status(400).end()
-    }
+    .catch(error=>{
+        next(error)
+    })
 })
+// app.delete('/api/notes/:id',(request,response)=>{
+//     const id = Number(request.params.id)
+//     notes = notes.filter(note => note.id !== id)
+//     response.status(204).end()
+// })
+
+app.put('/api/notes/:id',(request,response,next)=>{
+    const body = request.body
+    console.log(body)
+    const nNote = {
+        content : body.content,
+        important : body.important
+    }
+    Note.findByIdAndUpdate(request.params.id,nNote,{new: true})
+    .then(result=>response.json(result))
+    .catch(error=>next(error))
+})
+//the inverted commas makes the url unique, i.e its a combination of the resource type and a unique number
+// app.get('/api/notes/:id',(request,response)=>{
+//     const id = Number(request.params.id)
+//     const note = notes.find(note => {
+//         console.log(note.id, typeof note.id, id, typeof id, note.id === id)
+//         return note.id === id
+//     })
+//     if(note){
+//         console.log(note)
+//         response.json(note)
+//     }
+//     else{
+//         console.log(`Not found`)
+
+//         response.status(404).send(`Error 404 NOT FOUND`)
+
+//         //setting the status of code with .status               and not sending any data with end()
+//         // response.status(400).end()
+//     }
+// })
 
 //Following below is called middleware, this handles the request and response objects
-app.get('/api/notes',(request,response)=>{
-    response.json(notes)
-})
+// app.get('/api/notes',(request,response)=>{
+//     response.json(notes)
+// })
 
 app.use(errorHandler)
 //This will bind the server to port 3001
