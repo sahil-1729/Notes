@@ -74,12 +74,26 @@ app.post('/api/notes',(request,response)=>{
         response.send(savedNote)
     })
 })
-app.get('/api/notes/:id',(request,response)=>{
+app.get('/api/notes/:id',(request,response,next)=>{
     Note.findById(request.params.id).then(note =>{
-        response.json(note)
+        if(note){
+            response.json(note)
+        }else{
+            response.status(400).end()
+        }
     })
+    .catch(error=>next(error))
 })
 
+const errorHandler = (error, request, response, next) => {
+    console.error(error.message)
+    if (error.name === 'CastError') {
+      return response.status(400).send({ error: 'malformatted id' })
+    } 
+  
+    next(error)
+  }
+  
 
 const generateId = () => {
     const maxId = notes.length > 0
@@ -147,6 +161,8 @@ app.get('/api/notes/:id',(request,response)=>{
 app.get('/api/notes',(request,response)=>{
     response.json(notes)
 })
+
+app.use(errorHandler)
 //This will bind the server to port 3001
 const PORT = process.env.PORT || 3001
 app.listen(PORT)
