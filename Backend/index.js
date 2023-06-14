@@ -1,4 +1,4 @@
-//.env will come first 
+//.env will come first
 require('dotenv').config()
 const express = require('express')
 const app = express()
@@ -21,65 +21,65 @@ app.use(morgan('dev'))
 app.use(express.json())
 
 
-let notes = [  {    
-    id: 1,
-    content: "HTML is easy",    
-    important: true  
-},  
-{    id: 2,    
-    content: "Browser can execute only JavaScript",    important: false  
-},  
-{    id: 3,    
-    content: "GET and POST are the most important methods of HTTP protocol",    
-    important: true  }
-]
+// let notes = [  {
+//     id: 1,
+//     content: "HTML is easy",
+//     important: true
+// },
+// {    id: 2,
+//     content: "Browser can execute only JavaScript",    important: false
+// },
+// {    id: 3,
+//     content: "GET and POST are the most important methods of HTTP protocol",
+//     important: true  }
+// ]
 
-app.get('/api/notes',(request,response)=>{
-    Note.find({}).then(notes => {
-        response.json(notes)
-        // console.log(`mongo one`)
-    })
+app.get('/api/notes',(request,response) => {
+  Note.find({}).then(notes => {
+    response.json(notes)
+    // console.log(`mongo one`)
+  })
 })
 
-app.post('/api/notes',(request,response,next)=>{
-    const body = request.body
-    // console.log(`Here's the body ${body}`)
-    if(body.content === undefined){
-        return response.status(400).json({error : `content hi nai hai`})
+app.post('/api/notes',(request,response,next) => {
+  const body = request.body
+  // console.log(`Here's the body ${body}`)
+  if(body.content === undefined){
+    return response.status(400).json({ error : 'content hi nai hai' })
+  }
+  const nNote = new Note({
+    content : body.content,
+    important : body.important || false
+  })
+  console.log(`Here's the new note${nNote}`)
+  nNote.save().then(savedNote => {
+    response.send(savedNote)
+  })
+    .catch(error => next(error))
+})
+app.get('/api/notes/:id',(request,response,next) => {
+  Note.findById(request.params.id).then(note => {
+    if(note){
+      response.json(note)
+    }else{
+      response.status(400).end()
     }
-    const nNote = new Note({
-        content : body.content,
-        important : body.important || false
-    })
-    console.log(`Here's the new note${nNote}`)
-    nNote.save().then(savedNote=>{
-        response.send(savedNote)
-    })
-    .catch(error=>next(error))
-})
-app.get('/api/notes/:id',(request,response,next)=>{
-    Note.findById(request.params.id).then(note =>{
-        if(note){
-            response.json(note)
-        }else{
-            response.status(400).end()
-        } 
-    })
-    .catch(error=>next(error))
+  })
+    .catch(error => next(error))
 })
 
 const errorHandler = (error, request, response, next) => {
-    console.error(error.message)
-    if (error.name === 'CastError') {
-      return response.status(400).send({ error: 'malformatted id' })
-    } 
-    else if(error.name === 'ValidationError'){
-        return response.status(400).json({ error: error.message})
-    }
-  
-    next(error)
+  console.error(error.message)
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
   }
-  
+  else if(error.name === 'ValidationError'){
+    return response.status(400).json({ error: error.message })
+  }
+
+  next(error)
+}
+
 
 // const generateId = () => {
 //     const maxId = notes.length > 0
@@ -112,16 +112,16 @@ const errorHandler = (error, request, response, next) => {
 // })
 
 //Here below are the routes, wherein in the first, there are two parameters, request contains the detailed information of the get method, the the response tells what to do after getting the request, in this case(in first route) its sending hello world
-app.get('/',(request,response)=>{
-    response.send('<h1>Hello World</h1>')
+app.get('/',(request,response) => {
+  response.send('<h1>Hello World</h1>')
 })
 
-app.delete('/api/notes/:id',(request,response,next)=>{
-    Note.findByIdAndDelete(request.params.id).then(result=>{
-        response.status(204).end()
-    })
-    .catch(error=>{
-        next(error)
+app.delete('/api/notes/:id',(request,response,next) => {
+  Note.findByIdAndDelete(request.params.id).then(result => {
+    response.status(204).end()
+  })
+    .catch(error => {
+      next(error)
     })
 })
 // app.delete('/api/notes/:id',(request,response)=>{
@@ -130,16 +130,16 @@ app.delete('/api/notes/:id',(request,response,next)=>{
 //     response.status(204).end()
 // })
 
-app.put('/api/notes/:id',(request,response,next)=>{
-    const {content,important} = request.body
-    // console.log(body)
-    // const nNote = {
-    //     content : body.content,
-    //     important : body.important
-    // }
-    Note.findByIdAndUpdate(request.params.id,{content,important},{new: true,runValidators: true,context: 'query'})
-    .then(result=>response.json(result))
-    .catch(error=>next(error))
+app.put('/api/notes/:id',(request,response,next) => {
+  const { content,important } = request.body
+  // console.log(body)
+  // const nNote = {
+  //     content : body.content,
+  //     important : body.important
+  // }
+  Note.findByIdAndUpdate(request.params.id,{ content,important },{ new: true,runValidators: true,context: 'query' })
+    .then(result => response.json(result))
+    .catch(error => next(error))
 })
 //the inverted commas makes the url unique, i.e its a combination of the resource type and a unique number
 // app.get('/api/notes/:id',(request,response)=>{
