@@ -1,25 +1,38 @@
 const notesRouter = require('express').Router()
 const Note = require('../models/note')
 
-notesRouter.get('/', (request, response) => {
-  Note.find({}).then(notes => {
-    response.json(notes)
-  })
+notesRouter.get('/', async (request, response) => {
+  // Note.find({}).then(notes => {
+  //   response.json(notes)
+  // })
+  //used async await instead of .then, bc it can lead to callback hell, also for using async await, await must be inside async block
+  const notes = await Note.find({})
+  response.json(notes)
 })
 
-notesRouter.get('/:id', (request, response, next) => {
-  Note.findById(request.params.id)
-    .then(note => {
-      if (note) {
-        response.json(note)
-      } else {
-        response.status(404).end()
-      }
-    })
-    .catch(error => next(error))
+notesRouter.get('/:id',async (request, response, next) => {
+  try{
+    const note = await Note.findById(request.params.id)
+    if(note){
+      response.json(note)
+    }else{
+      response.status(404).end()
+    }
+  }catch(error){
+    next(error)
+  }
+  // Note.findById(request.params.id)
+  //   .then(note => {
+  //     if (note) {
+  //       response.json(note)
+  //     } else {
+  //       response.status(404).end()
+  //     }
+  //   })
+  //   .catch(error => next(error))
 })
 
-notesRouter.post('/', (request, response, next) => {
+notesRouter.post('/', async (request, response, next) => {
   const body = request.body
 
   const note = new Note({
@@ -27,11 +40,15 @@ notesRouter.post('/', (request, response, next) => {
     important: body.important || false,
   })
 
-  note.save()
-    .then(savedNote => {
-      response.json(savedNote)
-    })
-    .catch(error => next(error))
+  const savedNote = await note.save()
+
+  response.status(201).json(savedNote)
+
+  // note.save()
+  //   .then(savedNote => {
+  //     response.status(201).json(savedNote)
+  //   })
+  //   .catch(error => next(error))
 })
 
 notesRouter.delete('/:id', (request, response, next) => {
