@@ -2,13 +2,13 @@ const jwt = require('jsonwebtoken')
 const notesRouter = require('express').Router()
 const Note = require('../models/note')
 const User = require('../models/user')
-const {info} = require('../utils/logger')
+const { info } = require('../utils/logger')
 notesRouter.get('/', async (request, response) => {
   // Note.find({}).then(notes => {
   //   response.json(notes)
   // })
   //used async await instead of .then, bc it can lead to callback hell, also for using async await, await must be inside async block
-  const notes = await Note.find({}).populate('user',{username : 1, name : 1})
+  const notes = await Note.find({}).populate('user',{ username : 1, name : 1 })
   response.json(notes)
 })
 
@@ -49,7 +49,7 @@ notesRouter.post('/', async (request, response, next) => {
   const decodedToken = jwt.verify(getTokenFrom(request),process.env.SECRET)
   info(decodedToken)
   if(!decodedToken.id){
-    return response.status(401).json({error : "invalid token"})
+    return response.status(401).json({ error : 'invalid token' })
   }
   const user = await User.findById(decodedToken.id)
   const note = new Note({
@@ -75,8 +75,8 @@ notesRouter.post('/', async (request, response, next) => {
 
 notesRouter.delete('/:id', async (request, response) => {
   // try{
-    await Note.findByIdAndRemove(request.params.id)
-    response.status(204).end()
+  await Note.findByIdAndRemove(request.params.id)
+  response.status(204).end()
   // }catch(exception){
   //   next(exception)
   // }

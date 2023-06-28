@@ -2,12 +2,16 @@ import { useState, useEffect } from 'react'
 import Note from './components/Note'
 import Notification from './components/Notification'
 import noteService from './services/notes'
+import loginService from './services/login'
 
 const App = () => {
   const [notes, setNotes] = useState([])
   const [newNote, setNewNote] = useState('')
   const [showAll, setShowAll] = useState(true)
   const [errorMessage, setErrorMessage] = useState(null)
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [user , setUser] = useState(null)
 
   useEffect(() => {
     noteService
@@ -59,10 +63,63 @@ const App = () => {
         })
     }
 
+    const loginForm = () => (
+      <form onSubmit={handleLogin}>
+        <div>
+          username
+          <input type='text' value={username} name='Username' onChange={({target}) => setUsername(target.value)}/>
+        </div>
+        <div>
+          password
+          <input type='password' value={password} name='Password' onChange={({target}) => setPassword(target.value)}/>
+        </div>
+        <button type='submit'>login</button>
+      </form>
+    )
+
+    //While storing the html tags in a function, user curly braces () instead of this -> {}
+    const noteForm = () => (
+      <form onSubmit={addNote}>
+      <input value={newNote} onChange={handleNoteChange} />
+      <button type="submit">save</button>
+      </form>
+    )
+    const handleLogin = async (event) => {
+      event.preventDefault()
+      console.log(`logging in with ${username} ${password}`)
+      try{
+        const user = await loginService.login({username,password})
+        
+        noteService.setToken(user.token)
+        console.log(user)
+        setUser(user)
+        setUsername('')
+        setPassword('')
+      }catch(exception){
+        setErrorMessage('Wrong credentials')
+        setTimeout(() => {
+          setErrorMessage(null)
+        },5000)
+      }
+    }
   return (
     <div>
       <h1>Notes</h1>
       <Notification message={errorMessage} />
+      
+      {/* {user === null && loginForm}
+      {user !== null && noteForm} */}
+      {user === null ? loginForm() : noteForm()}
+      {console.log(`Value of user `,user)}
+      <h1>
+        Logged in 
+      </h1>
+      {/* {!user && loginForm()}
+      {user && <div>
+        <p>{user.name} logged in</p>
+        {noteForm()}
+              </div>} */}
+      <h2>Notes</h2>
       <div>
         <button onClick={() => setShowAll(!showAll)}>
           show {showAll ? 'important' : 'all' }
@@ -79,10 +136,7 @@ const App = () => {
           )}
         </ul>
       </ul>
-      <form onSubmit={addNote}>
-        <input value={newNote} onChange={handleNoteChange} />
-        <button type="submit">save</button>
-      </form>
+     
     </div>
   )
 }
