@@ -9,12 +9,18 @@ test('renders content', () => {
         content: 'Component testing is done with react-testing-library',
         important : true
     }
-    //for rendering the components, using render method, instead of rendering in DOM
-    render(<Note note={note}/>)    
-    //This gives access to the rendered components 
-    const element = screen.getByText('Component testing is done with react-testing-library')
-    screen.debug(element)
-    expect(element).toBeDefined()
+
+    const {container } = render (<Note note={note}/>)
+    const div = container.querySelector('.note')
+    expect(div).toHaveTextContent('Component testing is done with react-testing-library')
+
+    // //for rendering the components, using render method, instead of rendering in DOM
+    // render(<Note note={note}/>)  
+    // screen.debug()  
+    // //This gives access to the rendered components 
+    // const element = screen.getByText('Component testing is done with react-testing-library')
+    // screen.debug(element)
+    // expect(element).toBeDefined()
 })
 test('clicking the button calls event handler once', async () => {
     const note = {
@@ -48,5 +54,14 @@ describe('<Togglable/>', () => {
         await user.click(button)
         const div = container.querySelector('.togglableContent')
         expect(div).not.toHaveStyle('display : none')
+    })
+    test('toggled component can be closed',async () => {
+        const user = userEvent.setup()
+        const button = screen.getByText('show')
+        await user.click(button)
+        const closeButton = screen.getByText('cancel')
+        await user.click(closeButton)
+        const div = container.querySelector('.togglableContent')
+        expect(div).toHaveStyle('display : none')
     })
 })
