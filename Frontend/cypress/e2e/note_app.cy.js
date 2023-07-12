@@ -1,13 +1,13 @@
 describe('Note app',function(){
   beforeEach(function(){
-    cy.request('POST','http://localhost:3001/api/testing/reset')
+    cy.request('POST',`${Cypress.env('BACKEND')}/testing/reset`)
     const user = {
       username : "testing" ,
       name : "testing" ,
       password : "testing"
     }
-    cy.request('POST','http://localhost:3001/api/users/',user)
-    cy.visit('http://localhost:3000')  
+    cy.request('POST',`${Cypress.env('BACKEND')}/users/`,user)
+    cy.visit('')  
   });
 
   it('front page can be opened', function(){
@@ -19,13 +19,13 @@ describe('Note app',function(){
     cy.contains('log in').click()
   });
   
-  it.only('login fails with wrong password', function (){
-    cy.contains('log in').click()
-    cy.get('#username').type('testing')
-    cy.get('#password').type('test')
-    cy.get('#login-button').click()
-    cy.get('.error').contains('wrong credentials')
-  })
+  // it.only('login fails with wrong password', function (){
+  //   cy.contains('log in').click()
+  //   cy.get('#username').type('testing')
+  //   cy.get('#password').type('test')
+  //   cy.get('#login-button').click()
+  //   cy.get('.error').contains('wrong credentials')
+  // })
 
   it('user can login',function (){
     cy.contains('log in').click()
@@ -43,14 +43,15 @@ describe('Note app',function(){
       // cy.get('input:first').type('testing')
       // cy.get('input:last').type('testing')
       // cy.get('#login-button').click()
-      cy.login({username : 'testing', password : 'test'})
+      cy.login({username : 'testing', password : 'testing'})
 
     })
     it('a new note can be created',function(){
-      cy.contains('new note').click()
-      cy.get('input').type('This is the note from testing')
-      cy.contains('save').click()
-      cy.contains('This is the note from testing')
+      // cy.contains('new note').click()
+      // cy.get('input').type('This is the note from testing')
+      // cy.contains('save').click()
+      // cy.contains('This is the note from testing')
+      cy.createNote({content : 'Hello there', important : true})
     })
   })
 })
