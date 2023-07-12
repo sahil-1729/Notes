@@ -44,14 +44,28 @@ describe('Note app',function(){
       // cy.get('input:last').type('testing')
       // cy.get('#login-button').click()
       cy.login({username : 'testing', password : 'testing'})
-
     })
     it('a new note can be created',function(){
-      // cy.contains('new note').click()
-      // cy.get('input').type('This is the note from testing')
-      // cy.contains('save').click()
-      // cy.contains('This is the note from testing')
+      cy.contains('new note').click()
+      cy.get('input').type('This is the note from testing')
+      cy.contains('save').click()
+      cy.contains('This is the note from testing')
       cy.createNote({content : 'Hello there', important : true})
     })
+
+    it('one of the notes made important', function() {
+      cy.contains('new note').click()
+      cy.get('input').type('This is the note from testing')
+      cy.contains('save').click()
+      cy.contains('This is the note from testing')
+      cy.createNote({content : 'Hello there', important : true})
+      cy.contains('Hello there').parent().find('button').as('theButton')
+    cy.get('@theButton').click()
+    cy.get('@theButton').should('contain','make important')
   })
+
+  })
+
+ 
+
 })
